@@ -15,7 +15,7 @@ export default function App() {
   const addPass = async () => {
     try {
       const result = await WalletManager.addPassFromUrl(
-        'https://github.com/dev-family/react-native-wallet-manager/blob/main/example/resources/test.pkpass'
+        'https://github.com/dev-family/react-native-wallet-manager/blob/main/example/resources/test.pkpass?raw=true'
       );
       console.log(result);
     } catch (e) {
@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
+    justifyContent: 'center',
   },
   box: {
     width: 60,

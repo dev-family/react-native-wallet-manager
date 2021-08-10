@@ -1,4 +1,4 @@
-<a href="https://dev.family/?utm_source=github&utm_medium=react-native-wallet-manager&utm_campaign=readme"><img width="auto" center src="https://dev.family/?utm_source=github&utm_medium=react-native-wallet-manager&utm_campaign=readme" /></a>
+<a href="https://dev.family/?utm_source=github&utm_medium=react-native-wallet-manager&utm_campaign=readme"><img width="auto" center src="https://github.com/dev-family/react-native-wallet-manager/blob/main/docs/logo.png?raw=true" /></a>
 
 # react-native-wallet-manager
 
@@ -82,6 +82,8 @@ try {
 ```
 
 First argument is pass identifier. You can pass second argument (optional) to specify pass serial number.
+
+Project inspired by [react-native-wallet](https://www.npmjs.com/package/react-native-wallet)
 
 ## Contributing
 
