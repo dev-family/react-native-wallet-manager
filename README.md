@@ -11,7 +11,7 @@ Provides some Apple Wallet's functionality, like adding passes, removing passes 
 [![Platform - Android](https://img.shields.io/badge/platform-Android-3ddc84.svg?style=flat&logo=android)](https://www.android.com)
 [![Platform - iOS](https://img.shields.io/badge/platform-iOS-000.svg?style=flat&logo=apple)](https://developer.apple.com/ios)
 
-<img width="400" height="auto" center src="https://github.com/dev-family/react-native-wallet-manager/blob/main/docs/screenshot.png?raw=true" />
+<img width="400" height="auto" center src="https://github.com/dev-family/react-native-wallet-manager/blob/main/docs/screenshot.gif?raw=true" />
 
 ## Installation
 
