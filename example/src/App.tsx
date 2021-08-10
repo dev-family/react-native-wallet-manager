@@ -28,7 +28,7 @@ export default function App() {
       const result = await WalletManager.removePass(
         'pass.family.dev.stage.beerpoint-master'
       );
-      console.log(result, 'removePass');
+      alert(`remove pass: ${result}`);
     } catch (e) {
       console.log(e, 'removePass');
     }
@@ -39,7 +39,7 @@ export default function App() {
       const result = await WalletManager.hasPass(
         'pass.family.dev.stage.beerpoint-master'
       );
-      console.log(result, 'hasPass');
+      alert(`has pass: ${result}`);
     } catch (e) {
       console.log(e, 'hasPass');
     }

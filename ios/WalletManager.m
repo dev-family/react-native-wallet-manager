@@ -80,7 +80,7 @@ RCT_EXPORT_METHOD(
     }
   }
   
-  if (result) {
+  if (result == TRUE) {
     resolve(@(YES));
   } else {
     resolve(@(NO));
