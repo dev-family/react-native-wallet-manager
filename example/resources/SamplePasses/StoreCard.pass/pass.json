@@ -1,0 +1,41 @@
+{
+  "formatVersion" : 1,
+  "passTypeIdentifier" : "pass.com.apple.devpubs.example",
+  "serialNumber" : "p69f2J",
+  "teamIdentifier" : "A93A5CM278",
+  "webServiceURL" : "https://example.com/passes/",
+  "authenticationToken" : "vxwxd7J8AlNNFPS8k0a0FfUFtq0ewzFdc",
+  "locations" : [
+    {
+      "longitude" : -122.3748889,
+      "latitude" : 37.6189722
+    }
+  ],
+  "barcode" : {
+    "message" : "123456789",
+    "format" : "PKBarcodeFormatPDF417",
+    "messageEncoding" : "iso-8859-1"
+  },
+  "organizationName" : "Organic Produce",
+  "description" : "Organic Produce Loyalty Card",
+  "logoText" : "Organic Produce",
+  "foregroundColor" : "rgb(255, 255, 255)",
+  "backgroundColor" : "rgb(55, 117, 50)",
+  "storeCard" : {
+    "primaryFields" : [
+      {
+        "key" : "balance",
+        "label" : "remaining balance",
+        "value" : 21.75,
+        "currencyCode" : "USD"
+      }
+    ],
+    "auxiliaryFields" : [
+      {
+        "key" : "deal",
+        "label" : "Deal of the Day",
+        "value" : "Lemons"
+      }
+    ]
+  }
+}
