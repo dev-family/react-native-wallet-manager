@@ -1,9 +1,7 @@
 import * as React from 'react';
-
 import {
   StyleSheet,
   View,
-  Text,
   SafeAreaView,
   StatusBar,
   Button,
@@ -45,13 +43,24 @@ export default function App() {
     }
   };
 
+  const viewPass = async () => {
+    try {
+      await WalletManager.viewInWallet(
+        'pass.family.dev.stage.beerpoint-master'
+      );
+    } catch (e) {
+      console.log(e, 'error Viewing Pass');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.wrapper}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        <WalletButton onPress={addPass}></WalletButton>
-        <Button onPress={removePass} title="Remove pass"></Button>
-        <Button onPress={hasPass} title="Has pass"></Button>
+        <WalletButton onPress={addPass} />
+        <Button onPress={removePass} title="Remove pass" />
+        <Button onPress={hasPass} title="Has pass" />
+        <Button onPress={viewPass} title="View pass" />
       </View>
     </SafeAreaView>
   );
