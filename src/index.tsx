@@ -4,6 +4,7 @@ type WalletManagerType = {
   addPassFromUrl(url: string): Promise<boolean>;
   hasPass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
   removePass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
+  viewInWallet(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
 };
 
 const { WalletManager } = NativeModules;
@@ -27,6 +28,15 @@ export default {
       throw new Error('removePass method not available on Android');
     }
     return await WalletManager.removePass(
+      cardIdentifier,
+      serialNumber != null ? serialNumber : null
+    );
+  },
+  viewInWallet: async (cardIdentifier: string, serialNumber?: string) => {
+    if (Platform.OS === 'android') {
+      throw new Error('method not available on Android');
+    }
+    return await WalletManager.viewInWallet(
       cardIdentifier,
       serialNumber != null ? serialNumber : null
     );
