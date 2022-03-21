@@ -34,7 +34,7 @@ export default {
   },
   viewInWallet: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {
-      throw new Error('method not available on Android');
+      throw new Error('viewInWallet method not available on Android');
     }
     return await WalletManager.viewInWallet(
       cardIdentifier,

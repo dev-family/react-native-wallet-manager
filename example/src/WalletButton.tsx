@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 
-export default function WalletButton({ onPress }) {
+export default function WalletButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.wrapper}>
