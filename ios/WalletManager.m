@@ -88,6 +88,33 @@ RCT_EXPORT_METHOD(
   return;
 }
 
+
+RCT_EXPORT_METHOD(
+                  viewInWallet:(NSString *)cardIdentifier
+                  serialNumber:(nullable NSString *)cardSerialNumber
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  PKPassLibrary * passLibrary = [[PKPassLibrary alloc] init];
+  NSArray *passes = [passLibrary passes];
+  
+  for (PKPass *pass in passes) {
+    if ([self checkPassByIdentifier:pass identifier:cardIdentifier serialNumber:cardSerialNumber]) {
+        if(pass.passURL){
+            [[UIApplication sharedApplication] openURL: pass.passURL options:@{} completionHandler:nil];
+        }
+      resolve(@(YES));
+      return;
+    }
+  }
+  
+  resolve(@(NO));
+  return;
+}
+
+
+
+
 - (void)showViewControllerWithData:(NSData *)data
                           resolver:(RCTPromiseResolveBlock)resolve
                           rejecter:(RCTPromiseRejectBlock)reject {
