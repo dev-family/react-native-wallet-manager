@@ -19,7 +19,6 @@ def safeExtGet(prop, fallback) {
 
 android {
     compileSdkVersion safeExtGet('WalletManager_compileSdkVersion', 30)
-    buildToolsVersion safeExtGet('WalletManager_buildToolsVersion', '30.0.0')
     defaultConfig {
         minSdkVersion safeExtGet('WalletManager_minSdkVersion', 16)
         targetSdkVersion safeExtGet('WalletManager_targetSdkVersion', 30)
