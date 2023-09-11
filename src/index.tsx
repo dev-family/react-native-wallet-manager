@@ -1,6 +1,7 @@
 import { NativeModules, Platform, Linking } from 'react-native';
 
 type WalletManagerType = {
+  canAddPasses(): Promise<boolean>;
   addPassFromUrl(url: string): Promise<boolean>;
   hasPass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
   removePass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
@@ -10,6 +11,12 @@ type WalletManagerType = {
 const { WalletManager } = NativeModules;
 
 export default {
+  canAddPasses: async () => {
+    if (Platform.OS === 'android') {
+      throw new Error('canAddPasses method not available on Android');
+    }
+    return await WalletManager.canAddPasses();
+  },
   addPassFromUrl:
     Platform.OS === 'ios'
       ? WalletManager.addPassFromUrl
