@@ -16,14 +16,17 @@ static NSString *const rejectCode = @"wallet";
 
 RCT_EXPORT_MODULE(WalletManager);
 
-RCT_REMAP_METHOD(canAddPasses, resolver: (RCTPromiseResolveBlock)resolve
-     rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(
+                  canAddPasses:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
-  BOOL allowsPass = [PKAddPassesViewController canAddPasses];
-  if (allowsPass) {
+  BOOL showPass = [PKAddPassesViewController canAddPasses];
+  if (showPass) {
     resolve(@(YES));
+    return;
   }
   resolve(@(NO));
+  return;
 }
 
 RCT_EXPORT_METHOD(
