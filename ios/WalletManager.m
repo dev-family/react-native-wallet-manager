@@ -19,7 +19,7 @@ RCT_EXPORT_MODULE(WalletManager);
 RCT_REMAP_METHOD(canAddPasses, resolver: (RCTPromiseResolveBlock)resolve
      rejecter:(RCTPromiseRejectBlock)reject)
 {
-  BOOL *allowsPass = [PKAddPassesViewController canAddPasses];
+  BOOL allowsPass = [PKAddPassesViewController canAddPasses];
   if (allowsPass) {
     resolve(@(YES));
   }
