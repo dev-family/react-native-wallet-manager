@@ -17,3 +17,9 @@
 ### Added
 
 - Adds ability to check for iOS PKAddPassesViewController canAddPasses method. ([1b8c5c4f79a34820f6e3a709240f26b3e247b53f](https://github.com/dev-family/react-native-wallet-manager/pull/11/commits/1b8c5c4f79a34820f6e3a709240f26b3e247b53f) by [@brantleyenglish](https://github.com/brantleyenglish))
+
+## v0.0.5
+
+### Added
+
+- Added support to android target SDK v 33. ([6470e80ebae77019cb29c4213a60deb9b7bfb06c](https://github.com/dev-family/react-native-wallet-manager/pull/15/commits/6470e80ebae77019cb29c4213a60deb9b7bfb06c) by [@ferencik-f](https://github.com/ferencik-f))
