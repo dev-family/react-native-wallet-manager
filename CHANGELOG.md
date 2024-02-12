@@ -23,3 +23,9 @@
 ### Added
 
 - Added support to android target SDK v 33. ([6470e80ebae77019cb29c4213a60deb9b7bfb06c](https://github.com/dev-family/react-native-wallet-manager/pull/15/commits/6470e80ebae77019cb29c4213a60deb9b7bfb06c) by [@ferencik-f](https://github.com/ferencik-f))
+
+## v0.0.6
+
+### Added
+
+- Added support for React Native 0.73 on android. ([86776d5fa9d3ef9ccccb98db6387d3e361471ae6](https://github.com/dev-family/react-native-wallet-manager/pull/18/commits/86776d5fa9d3ef9ccccb98db6387d3e361471ae6) by [@LucasVeloz](https://github.com/LucasVeloz))
