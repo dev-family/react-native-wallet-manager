@@ -2,6 +2,7 @@ import { NativeModules, Platform, Linking } from 'react-native';
 
 type WalletManagerType = {
   canAddPasses(): Promise<boolean>;
+  showAddPassControllerFromFile(url: string): Promise<boolean>;
   addPassFromUrl(url: string): Promise<boolean>;
   hasPass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
   removePass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
@@ -17,6 +18,9 @@ export default {
     }
     return await WalletManager.canAddPasses();
   },
+ showAddPassControllerFromFile: async(filePath) => {
+    return WalletManager.showAddPassControllerFromFile(filePath);
+  },
   addPassFromUrl:
     Platform.OS === 'ios'
       ? WalletManager.addPassFromUrl
@@ -30,6 +34,7 @@ export default {
       serialNumber != null ? serialNumber : null
     );
   },
+
   removePass: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {
       throw new Error('removePass method not available on Android');
