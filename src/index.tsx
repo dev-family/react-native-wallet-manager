@@ -34,7 +34,6 @@ export default {
       serialNumber != null ? serialNumber : null
     );
   },
-
   removePass: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {
       throw new Error('removePass method not available on Android');
