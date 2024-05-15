@@ -30,6 +30,21 @@ RCT_EXPORT_METHOD(
 }
 
 RCT_EXPORT_METHOD(
+                  showAddPassControllerFromFile:(NSString *)filepath
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject
+                  ) {
+    NSData* data =[[NSData alloc]init];
+
+    data = [NSData dataWithContentsOfFile:filepath];
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self showViewControllerWithData:data resolver:resolve rejecter:reject];
+    });
+
+}
+
+RCT_EXPORT_METHOD(
                   addPassFromUrl:(NSString *)pass
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject
