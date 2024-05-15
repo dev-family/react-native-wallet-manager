@@ -29,3 +29,9 @@
 ### Added
 
 - Added support for React Native 0.73 on android. ([86776d5fa9d3ef9ccccb98db6387d3e361471ae6](https://github.com/dev-family/react-native-wallet-manager/pull/18/commits/86776d5fa9d3ef9ccccb98db6387d3e361471ae6) by [@LucasVeloz](https://github.com/LucasVeloz))
+
+## v0.0.7
+
+### Added
+
+- Added showAddPassControllerFromFile method for iOS platform to pass in local filepath of .pkpass. ([f989b785d8e54f4642dba74226850b9d24b10508](https://github.com/dev-family/react-native-wallet-manager/pull/21/commits/f989b785d8e54f4642dba74226850b9d24b10508) by [@devt259](https://github.com/devt259))
