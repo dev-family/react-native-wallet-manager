@@ -40,7 +40,7 @@ RCT_EXPORT_METHOD(
         reject(@"file_error", @"Failed to load file", error);
         return;
     }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_main_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self showViewControllerWithData:data resolver:resolve rejecter:reject];
     });
 }
