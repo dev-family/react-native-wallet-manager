@@ -4,7 +4,6 @@
 
 This library provides integration with both Apple Wallet on iOS and Google Wallet on Android. It allows you to add, remove, and check for existing passes on iOS, and add passes to Google Wallet on Android.
 
-[![npm version](https://badge.fury.io/js/react-native-wallet-manager.svg)](https://twitter.com/dev___family)
 [![npm version](https://badge.fury.io/js/react-native-wallet-manager.svg)](https://www.npmjs.org/package/react-native-wallet-manager)
 [![npm](https://img.shields.io/npm/dt/react-native-wallet-manager.svg)](https://www.npmjs.org/package/react-native-wallet-manager)
 [![MIT](https://img.shields.io/dub/l/vibe-d.svg)](https://opensource.org/licenses/MIT)
