@@ -36,7 +36,7 @@
 
 - Added showAddPassControllerFromFile method for iOS platform to pass in local filepath of .pkpass. ([f989b785d8e54f4642dba74226850b9d24b10508](https://github.com/dev-family/react-native-wallet-manager/pull/21/commits/f989b785d8e54f4642dba74226850b9d24b10508) by [@devt259](https://github.com/devt259))
 
-## v1.0.0
+## v1.1.0
 
 ### Added
 
