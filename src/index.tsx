@@ -7,19 +7,28 @@ type WalletManagerType = {
   hasPass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
   removePass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
   viewInWallet(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
+  addPassToGoogleWallet(jwt: string): Promise<void>;
 };
 
 const { WalletManager } = NativeModules;
 
 export default {
   canAddPasses: async () => {
-    if (Platform.OS === 'android') {
-      throw new Error('canAddPasses method not available on Android');
-    }
     return await WalletManager.canAddPasses();
   },
- showAddPassControllerFromFile: async(filePath) => {
+  showAddPassControllerFromFile: async (filePath: string) => {
+    if (Platform.OS === 'android') {
+      throw new Error(
+        'showAddPassControllerFromFile method not available on Android'
+      );
+    }
     return WalletManager.showAddPassControllerFromFile(filePath);
+  },
+  addPassToGoogleWallet: async (jwt: string) => {
+    if (Platform.OS === 'ios') {
+      throw new Error('addPassToGoogleWallet method not available on IOS');
+    }
+    return await WalletManager.addPassToGoogleWallet(jwt);
   },
   addPassFromUrl:
     Platform.OS === 'ios'
@@ -53,9 +62,3 @@ export default {
     );
   },
 } as WalletManagerType;
-
-// Platform.OS === 'ios'
-// ? WalletManager.removePass
-// : new Promise((_, reject) => {
-//     return reject('removePass method not available on Android');
-//   }),

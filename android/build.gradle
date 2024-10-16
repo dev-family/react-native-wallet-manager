@@ -7,6 +7,7 @@ buildscript {
 
         dependencies {
             classpath 'com.android.tools.build:gradle:3.5.3'
+
         }
     }
 }
@@ -21,7 +22,7 @@ android {
     compileSdkVersion safeExtGet('WalletManager_compileSdkVersion', 34)
     buildToolsVersion safeExtGet('WalletManager_buildToolsVersion', '33.0.0')
     defaultConfig {
-        minSdkVersion safeExtGet('WalletManager_minSdkVersion', 16)
+        minSdkVersion safeExtGet('WalletManager_minSdkVersion', 21)
         targetSdkVersion safeExtGet('WalletManager_targetSdkVersion', 33)
         versionCode 1
         versionName "1.0"
@@ -55,4 +56,6 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
+  implementation 'com.google.android.gms:play-services-pay:16.5.0'
+  implementation "com.google.android.gms:play-services-wallet:19.4.0"
 }

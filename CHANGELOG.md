@@ -35,3 +35,21 @@
 ### Added
 
 - Added showAddPassControllerFromFile method for iOS platform to pass in local filepath of .pkpass. ([f989b785d8e54f4642dba74226850b9d24b10508](https://github.com/dev-family/react-native-wallet-manager/pull/21/commits/f989b785d8e54f4642dba74226850b9d24b10508) by [@devt259](https://github.com/devt259))
+
+## v1.0.0
+
+### Added
+
+- **Google Wallet**: added new methods for Android:
+  - **addPassToGoogleWallet** method to add passes to Google Wallet.
+  - **canAddPasses** method to verify if Google Wallet is supported on the device.
+
+### Updated
+
+- **Documentation**: completely revamped for improved usability and structure.
+  - Detailed sections added for using the new Google Wallet methods.
+  - Improved navigation and added step-by-step examples.
+
+### Fixed
+
+- **Examples**: updated code examples for all new features, including integration with Google Wallet on Android.

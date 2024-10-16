@@ -9,6 +9,8 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "fs": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
     "react": "16.13.1",
     "react-native": "0.63.4"
   },

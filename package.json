@@ -1,7 +1,7 @@
 {
   "name": "react-native-wallet-manager",
-  "version": "0.0.7",
-  "description": "Provides some Apple Wallet's functionality, like adding passes, removing passes and checking passises for existing.",
+  "version": "1.0.0",
+  "description": "Provides some Apple Wallet functionality for IOS and Google Wallet for Android.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",

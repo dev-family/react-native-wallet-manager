@@ -34,15 +34,17 @@ RCT_EXPORT_METHOD(
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject
                   ) {
-    NSData* data =[[NSData alloc]init];
-
-    data = [NSData dataWithContentsOfFile:filepath];
-
+    NSData *data = [NSData dataWithContentsOfFile:filepath];
+    if (!data) {
+        NSError *error = [NSError errorWithDomain:@"FileError" code:404 userInfo:@{NSLocalizedDescriptionKey:@"File not found or data is empty"}];
+        reject(@"file_error", @"Failed to load file", error);
+        return;
+    }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self showViewControllerWithData:data resolver:resolve rejecter:reject];
     });
-
 }
+
 
 RCT_EXPORT_METHOD(
                   addPassFromUrl:(NSString *)pass
