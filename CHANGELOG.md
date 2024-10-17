@@ -53,3 +53,9 @@
 ### Fixed
 
 - **Examples**: updated code examples for all new features, including integration with Google Wallet on Android.
+
+## v1.1.1
+
+### Fixed
+
+- Replaced **dispatch_get_main_queue** with **dispatch_get_global_queue** in methods **addPassFromUrl** and **showAddPassControllerFromFile** to fix the app crashed, if Wallet not installed. ([e4766ca091e09b1234c027640c04f34e0307bd17](https://github.com/dev-family/react-native-wallet-manager/pull/30/commits/e4766ca091e09b1234c027640c04f34e0307bd17) by [@ghorbani-m](https://github.com/ghorbani-m))
