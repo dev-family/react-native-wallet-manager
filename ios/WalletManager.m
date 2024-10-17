@@ -51,7 +51,7 @@ RCT_EXPORT_METHOD(
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject
                   ) {
-  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+  dispatch_async(dispatch_get_main_queue(), ^{
     NSURL *passURL = [[NSURL alloc] initWithString:pass];
     if (!passURL) {
       reject(rejectCode, @"The pass URL is invalid", nil);
