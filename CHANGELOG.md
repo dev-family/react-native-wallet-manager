@@ -59,3 +59,9 @@
 ### Fixed
 
 - Replaced **dispatch_get_main_queue** with **dispatch_get_global_queue** in methods **addPassFromUrl** and **showAddPassControllerFromFile** to fix the app crashed, if Wallet not installed. ([e4766ca091e09b1234c027640c04f34e0307bd17](https://github.com/dev-family/react-native-wallet-manager/pull/30/commits/e4766ca091e09b1234c027640c04f34e0307bd17) by [@ghorbani-m](https://github.com/ghorbani-m))
+
+## v1.1.2
+
+### Chore
+
+- Replace jcenter() with mavenCentral() in build.gradle. ([7be0bc45f6d872aa2ebd2d43d678340e5200181f](https://github.com/dev-family/react-native-wallet-manager/pull/39/commits/7be0bc45f6d872aa2ebd2d43d678340e5200181f) by [@vnahornyi](https://github.com/vnahornyi))
