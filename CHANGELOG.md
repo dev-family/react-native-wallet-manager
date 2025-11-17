@@ -65,3 +65,9 @@
 ### Chore
 
 - Replace jcenter() with mavenCentral() in build.gradle. ([7be0bc45f6d872aa2ebd2d43d678340e5200181f](https://github.com/dev-family/react-native-wallet-manager/pull/39/commits/7be0bc45f6d872aa2ebd2d43d678340e5200181f) by [@vnahornyi](https://github.com/vnahornyi))
+
+## v1.1.3
+
+### Fixes
+
+- Build: ensure lib output is included in published package

@@ -1,5 +1,17 @@
-
 {
-  "extends": "./tsconfig",
-  "exclude": ["example"]
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "lib/typescript",
+    "rootDir": "src",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "stripInternal": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "**/__tests__",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "example"
+  ]
 }
