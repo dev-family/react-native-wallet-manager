@@ -6,19 +6,22 @@ buildscript {
         }
 
         dependencies {
-            classpath 'com.android.tools.build:gradle:3.5.3'
+            classpath 'com.android.tools.build:gradle:8.7.2'
 
         }
     }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: "kotlin-android"
+apply plugin: "com.facebook.react"
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
 android {
+    namespace "com.reactnativewalletmanager"
     compileSdkVersion safeExtGet('WalletManager_compileSdkVersion', 34)
     buildToolsVersion safeExtGet('WalletManager_buildToolsVersion', '33.0.0')
     defaultConfig {
@@ -54,8 +57,13 @@ repositories {
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
+  implementation "com.facebook.react:react-android"
   implementation 'com.google.android.gms:play-services-pay:16.5.0'
   implementation "com.google.android.gms:play-services-wallet:19.4.0"
 }
+
+  react {
+    jsRootDir = file("../src/")
+    libraryName = "NativeWalletManager"
+    codegenJavaPackageName = "com.reactnativewalletmanager"
+  }

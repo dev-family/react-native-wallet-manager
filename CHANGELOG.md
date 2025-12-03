@@ -71,3 +71,9 @@
 ### Fixes
 
 - Build: ensure lib output is included in published package
+
+## v2.0.0
+
+### Added
+
+- feat: add support for the new architecture (TurboModule/Fabric)
