@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "10.0" }
   s.source       = { :git => "https://github.com/dev-family/react-native-wallet-manager.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm}"
-
-  s.dependency "React-Core"
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.private_header_files = "ios/generated/**/*.h"
+  install_modules_dependencies(s)
 end

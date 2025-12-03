@@ -1,16 +1,5 @@
-import { NativeModules, Platform, Linking } from 'react-native';
-
-type WalletManagerType = {
-  canAddPasses(): Promise<boolean>;
-  showAddPassControllerFromFile(url: string): Promise<boolean>;
-  addPassFromUrl(url: string): Promise<boolean>;
-  hasPass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
-  removePass(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
-  viewInWallet(cardIdentifier: string, serialNumber?: string): Promise<boolean>;
-  addPassToGoogleWallet(jwt: string): Promise<void>;
-};
-
-const { WalletManager } = NativeModules;
+import { Linking, Platform } from 'react-native';
+import WalletManager from './specs/NativeWalletManager';
 
 export default {
   canAddPasses: async () => {
@@ -33,7 +22,7 @@ export default {
   addPassFromUrl:
     Platform.OS === 'ios'
       ? WalletManager.addPassFromUrl
-      : (url) => Linking.openURL(url),
+      : (url: string) => Linking.openURL(url),
   hasPass: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {
       throw new Error('hasPass method not available on Android');
@@ -61,4 +50,4 @@ export default {
       serialNumber != null ? serialNumber : null
     );
   },
-} as WalletManagerType;
+};
