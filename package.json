@@ -1,6 +1,6 @@
 {
   "name": "react-native-wallet-manager",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Provides some Apple Wallet functionality for IOS and Google Wallet for Android.",
   "source": "src/index.tsx",
   "main": "lib/commonjs/index.js",

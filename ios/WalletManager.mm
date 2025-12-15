@@ -1,9 +1,14 @@
 #import <PassKit/PassKit.h>
 #import <NativeWalletManagerSpec/NativeWalletManagerSpec.h>
+#if __has_include(<react_native_wallet_manager/react_native_wallet_manager-Swift.h>)
+// if use_frameworks! :static
+#import <react_native_wallet_manager/react_native_wallet_manager-Swift.h>
+#else
+#import "react_native_wallet_manager-Swift.h"
+#endif
+
 @interface NativeWalletManager : NSObject <NativeWalletManagerSpec>
 @end
-
-#import "react_native_wallet_manager-Swift.h"
 
 @implementation NativeWalletManager
 

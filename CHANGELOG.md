@@ -77,3 +77,9 @@
 ### Added
 
 - feat: add support for the new architecture (TurboModule/Fabric)
+
+## v2.0.1
+
+### Fixed
+
+- swift class not found if using static frameworks
