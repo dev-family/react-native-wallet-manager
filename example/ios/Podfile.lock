@@ -1782,7 +1782,7 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
-  - react-native-wallet-manager (1.1.3):
+  - react-native-wallet-manager (2.1.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2626,7 +2626,7 @@ SPEC CHECKSUMS:
   React-logger: 500f2fa5697d224e63c33d913c8a4765319e19bf
   React-Mapbuffer: 06d59c448da7e34eb05b3fb2189e12f6a30fec57
   React-microtasksnativemodule: d1ee999dc9052e23f6488b730fa2d383a4ea40e5
-  react-native-wallet-manager: ca0f24d3108f268b4881986a8500f7fc8213b155
+  react-native-wallet-manager: 39783f970b8b5627c2e6e9847bcc47b21ef046d9
   React-NativeModulesApple: 46690a0fe94ec28fc6fc686ec797b911d251ded0
   React-oscompat: 95875e81f5d4b3c7b2c888d5bd2c9d83450d8bdb
   React-perflogger: 2e229bf33e42c094fd64516d89ec1187a2b79b5b
@@ -2664,4 +2664,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 454516f80f46e8fa3908776423008b90350d6f2f
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0
