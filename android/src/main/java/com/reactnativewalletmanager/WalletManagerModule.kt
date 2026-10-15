@@ -62,7 +62,7 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
     }
 
     override fun addPassToGoogleWallet(jwt: String, promise: Promise) {
-        val activity = currentActivity
+        val activity = reactApplicationContext.currentActivity
         if (activity != null) {
             addPassPromise = promise
             try {
@@ -98,7 +98,7 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
   }
 
   override fun addPassFromUrl(url: String, headers: ReadableMap?, promise: Promise) {
-    val activity = currentActivity
+    val activity = reactApplicationContext.currentActivity
     if (activity == null) {
       promise.reject("NO_ACTIVITY", "Current activity is unavailable")
       return
