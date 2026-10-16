@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import WalletManager from './specs/NativeWalletManager';
+import NativeWalletManager from './specs/NativeWalletManager';
 
 /**
  * Error codes that can be thrown by addPassFromUrl
@@ -29,9 +29,20 @@ export type WalletError = Error & {
   code: WalletErrorCode;
 };
 
+const getNativeModule = () => {
+  if (NativeWalletManager == null) {
+    throw new Error(
+      'react-native-wallet-manager: native module NativeWalletManager not found. ' +
+        'Version 2.x requires the New Architecture (TurboModules); for the old architecture use 1.1.3. ' +
+        'Rebuild the app after installing (run pod install on iOS).'
+    );
+  }
+  return NativeWalletManager;
+};
+
 export default {
   canAddPasses: async () => {
-    return await WalletManager.canAddPasses();
+    return await getNativeModule().canAddPasses();
   },
   showAddPassControllerFromFile: async (filePath: string) => {
     if (Platform.OS === 'android') {
@@ -39,21 +50,22 @@ export default {
         'showAddPassControllerFromFile method not available on Android'
       );
     }
-    return WalletManager.showAddPassControllerFromFile(filePath);
+    return getNativeModule().showAddPassControllerFromFile(filePath);
   },
   addPassToGoogleWallet: async (jwt: string) => {
     if (Platform.OS === 'ios') {
       throw new Error('addPassToGoogleWallet method not available on IOS');
     }
-    return await WalletManager.addPassToGoogleWallet(jwt);
+    return await getNativeModule().addPassToGoogleWallet(jwt);
   },
-  addPassFromUrl: (url: string, headers?: Record<string, string>) =>
-    WalletManager.addPassFromUrl(url, headers ?? null),
+  addPassFromUrl: async (url: string, headers?: Record<string, string>) => {
+    return await getNativeModule().addPassFromUrl(url, headers ?? null);
+  },
   hasPass: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {
       throw new Error('hasPass method not available on Android');
     }
-    return await WalletManager.hasPass(
+    return await getNativeModule().hasPass(
       cardIdentifier,
       serialNumber != null ? serialNumber : null
     );
@@ -62,7 +74,7 @@ export default {
     if (Platform.OS === 'android') {
       throw new Error('removePass method not available on Android');
     }
-    return await WalletManager.removePass(
+    return await getNativeModule().removePass(
       cardIdentifier,
       serialNumber != null ? serialNumber : null
     );
@@ -71,7 +83,7 @@ export default {
     if (Platform.OS === 'android') {
       throw new Error('viewInWallet method not available on Android');
     }
-    return await WalletManager.viewInWallet(
+    return await getNativeModule().viewInWallet(
       cardIdentifier,
       serialNumber != null ? serialNumber : null
     );

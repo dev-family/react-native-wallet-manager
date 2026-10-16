@@ -19,4 +19,4 @@ export interface Spec extends TurboModule {
   addPassToGoogleWallet(jwt: string): Promise<void>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('NativeWalletManager');
+export default TurboModuleRegistry.get<Spec>('NativeWalletManager');
