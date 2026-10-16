@@ -29,14 +29,25 @@ WalletManagerImpl *walletManager = [[WalletManagerImpl alloc] init];
     return std::make_shared<facebook::react::NativeWalletManagerSpecJSI>(params);
 }
 
-- (void)addPassFromUrl:(nonnull NSString *)url headers:(nullable NSDictionary *)headers resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
-  [walletManager addPassFromUrl:url headers:headers completion:^(BOOL success, NSString *errorCode, NSString *errorMessage) {
+// Maps the (success, errorCode, errorMessage) completion of WalletManagerImpl
+// to a promise.
+static void (^addPassCompletion(RCTPromiseResolveBlock resolve, RCTPromiseRejectBlock reject))(BOOL, NSString *, NSString *)
+{
+  return ^(BOOL success, NSString *errorCode, NSString *errorMessage) {
     if (success) {
       resolve(@(YES));
     } else {
       reject(errorCode, errorMessage, nil);
     }
-  }];
+  };
+}
+
+- (void)addPassFromUrl:(nonnull NSString *)url headers:(nullable NSDictionary *)headers resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+  [walletManager addPassFromUrl:url headers:headers completion:addPassCompletion(resolve, reject)];
+}
+
+- (void)addPassesFromUrls:(nonnull NSArray *)urls headers:(nullable NSDictionary *)headers resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
+  [walletManager addPassesFromUrls:urls headers:headers completion:addPassCompletion(resolve, reject)];
 }
 
 - (void)addPassToGoogleWallet:(nonnull NSString *)jwt resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {

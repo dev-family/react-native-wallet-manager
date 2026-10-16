@@ -88,18 +88,20 @@
 
 ### Added
 
-- iOS: `addPassFromUrl` and `showAddPassControllerFromFile` accept `.pkpasses` bundles (ZIP or ZIP64, stored or deflated) and present every pass in one sheet. Passes already in Wallet are left out, `PASS_ALREADY_EXISTS` is returned only when every pass of the bundle is already there. Fixes [#44](https://github.com/dev-family/react-native-wallet-manager/issues/44) and [#38](https://github.com/dev-family/react-native-wallet-manager/issues/38)
+- iOS: `addPassFromUrl` and `showAddPassControllerFromFile` accept `.pkpasses` bundles (ZIP or ZIP64, stored or deflated) and present every pass in one sheet. Passes already in Wallet are left out, `PASS_ALREADY_EXISTS` is returned only when every pass of the bundle is already there. Fixes [#44](https://github.com/dev-family/react-native-wallet-manager/issues/44), refs [#38](https://github.com/dev-family/react-native-wallet-manager/issues/38)
+- iOS: `addPassesFromUrls(urls, headers?)` downloads several `.pkpass` files or `.pkpasses` bundles and presents all passes in one sheet. Fixes [#38](https://github.com/dev-family/react-native-wallet-manager/issues/38)
 - iOS, Android: `ADD_PASS_IN_PROGRESS` error code, also added to the `WalletErrorCode` type
 
 ### Fixed
 
 - Android: skip the explicit Kotlin plugin when AGP already registers the kotlin extension, fixes the build on AGP 9 (Expo SDK 58, RN 0.87). ([3ecff64c06bb680876b5a38314346aec5a7d6fad](https://github.com/dev-family/react-native-wallet-manager/pull/46/commits/3ecff64c06bb680876b5a38314346aec5a7d6fad) by [@gabrieldonadel](https://github.com/gabrieldonadel))
 - Android: read the current activity from the application context, the bare `currentActivity` access no longer compiles on Kotlin 2.2 (RN 0.87), fixes [#47](https://github.com/dev-family/react-native-wallet-manager/issues/47). ([0f60e18f5f52ad7d77244424b3c4daed5773d558](https://github.com/dev-family/react-native-wallet-manager/pull/45/commits/0f60e18f5f52ad7d77244424b3c4daed5773d558) by [@aattola](https://github.com/aattola))
-- iOS, Android: only one pass is added at a time. While a pass is being added, `addPassFromUrl` and `addPassToGoogleWallet` reject with `ADD_PASS_IN_PROGRESS` and `showAddPassControllerFromFile` resolves with `false`. Before, a second call replaced the pending request and the first promise never settled
+- iOS, Android: only one pass is added at a time. While a pass is being added, `addPassFromUrl`, `addPassesFromUrls` and `addPassToGoogleWallet` reject with `ADD_PASS_IN_PROGRESS` and `showAddPassControllerFromFile` resolves with `false`. Before, a second call replaced the pending request and the first promise never settled
 - iOS: if the Apple Wallet sheet cannot be shown, the pending promise rejects with `CONTROLLER_ERROR` on the next call instead of never settling
 - iOS: run the module on the main thread, PassKit sheets were presented from a background queue
 - iOS: `addPassFromUrl` rejects a URL without a scheme with `INVALID_URL` and percent-encodes invalid characters on every iOS version. Before, iOS 16 and earlier rejected such URLs with `INVALID_URL`, iOS 17 and later with `NETWORK_ERROR`
 - Without the New Architecture, importing the library no longer crashes the app. Method calls reject with an error that says the New Architecture is required and points to 1.1.3, the README explains how to enable it. Refs [#43](https://github.com/dev-family/react-native-wallet-manager/issues/43)
+- iOS: `addPassFromUrl` no longer crashes when a header value is not a string. A number or boolean is sent as text, `null` is skipped
 - Package: ship `react-native.config.js`, exclude `android/.gradle` and drop the Gradle wrapper from the npm tarball
 
 ### Chore

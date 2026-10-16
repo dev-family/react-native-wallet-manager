@@ -50,13 +50,51 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
 
   @MainActor @objc(addPassFromUrl:headers:completion:)
   public func addPassFromUrl(_ passUrlString: String,
-                             headers: [String: String]?,
+                             headers: [String: Any]?,
                              completion: @escaping (Bool, String?, String?) -> Void
   ) {
     guard let url = Self.makeURL(passUrlString) else {
       completion(false, "INVALID_URL", "The pass URL is invalid")
       return
     }
+    addPasses([(position: 1, url: url)], headers: headers, numbered: false, completion: completion)
+  }
+
+  // MARK: - addPassesFromUrls
+
+  // Takes [Any]: an element that is not a string (null from JS) must reject,
+  // not trap in the bridge.
+  @MainActor @objc(addPassesFromUrls:headers:completion:)
+  public func addPassesFromUrls(_ passUrlStrings: [Any],
+                                headers: [String: Any]?,
+                                completion: @escaping (Bool, String?, String?) -> Void
+  ) {
+    guard !passUrlStrings.isEmpty else {
+      completion(false, "INVALID_URL", "No pass URLs given")
+      return
+    }
+    var entries: [(position: Int, url: URL)] = []
+    for (index, value) in passUrlStrings.enumerated() {
+      guard let string = value as? String, let url = Self.makeURL(string) else {
+        completion(false, "INVALID_URL", "URL \(index + 1): The pass URL is invalid")
+        return
+      }
+      // The same URL is downloaded once.
+      if !entries.contains(where: { $0.url == url }) {
+        entries.append((position: index + 1, url: url))
+      }
+    }
+    addPasses(entries, headers: headers, numbered: true, completion: completion)
+  }
+
+  // Downloads every URL, merges the passes and presents them in one sheet.
+  // The first download that fails cancels the others and rejects the call.
+  // With `numbered`, an error message names the failed URL by its position.
+  @MainActor private func addPasses(_ entries: [(position: Int, url: URL)],
+                                    headers: [String: Any]?,
+                                    numbered: Bool,
+                                    completion: @escaping (Bool, String?, String?) -> Void
+  ) {
     guard beginAddPass() else {
       completion(false, "ADD_PASS_IN_PROGRESS", "Another pass is already being added")
       return
@@ -64,39 +102,68 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
     self.completion = completion
     self.isLoading = true
 
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-
-    // Add custom headers (for authentication)
-    if let headers = headers {
-      for (key, value) in headers {
-        request.setValue(value, forHTTPHeaderField: key)
+    var downloads = [Data?](repeating: nil, count: entries.count)
+    var failure: (index: Int, errorCode: String, errorMessage: String)?
+    var tasks: [URLSessionDataTask] = []
+    let lock = NSLock()
+    let group = DispatchGroup()
+    // All tasks are created before any starts and the array is shared under
+    // the lock, so the first failure can cancel every other download.
+    let created = entries.enumerated().map { index, entry in
+      Self.makeTask(entry.url, headers: headers) { data, errorCode, errorMessage in
+        var toCancel: [URLSessionDataTask] = []
+        lock.lock()
+        if let data = data {
+          downloads[index] = data
+        } else if failure == nil {
+          failure = (index, errorCode ?? "INVALID_DATA", errorMessage ?? "No data received")
+          toCancel = tasks
+        }
+        lock.unlock()
+        toCancel.forEach { $0.cancel() }
+        group.leave()
       }
     }
+    lock.lock()
+    tasks = created
+    lock.unlock()
+    // Enter for every task before any starts: a failure cancels tasks that are
+    // not started yet, and their completions leave the group right away.
+    created.forEach { _ in group.enter() }
+    created.forEach { $0.resume() }
 
-    URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-      DispatchQueue.main.async {
-        guard let self = self else { return }
-        self.isLoading = false
+    group.notify(queue: .main) { [weak self] in
+      // The completions capture `tasks`, and the tasks hold the completions.
+      // Clear it so the cycle never outlives the request.
+      lock.lock()
+      tasks = []
+      lock.unlock()
 
-        if let error = error {
-          self.addPassCompletion(false, "NETWORK_ERROR", error.localizedDescription)
-          return
-        }
+      guard let self = self else { return }
+      self.isLoading = false
 
-        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-          self.addPassCompletion(false, "HTTP_ERROR", "HTTP \(httpResponse.statusCode)")
-          return
-        }
-
-        guard let data = data else {
-          self.addPassCompletion(false, "INVALID_DATA", "No data received")
-          return
-        }
-
-        self.showViewController(with: data)
+      let fail = { (index: Int, errorCode: String, errorMessage: String) in
+        let message = numbered ? "URL \(entries[index].position): \(errorMessage)" : errorMessage
+        self.addPassCompletion(false, errorCode, message)
       }
-    }.resume()
+
+      if let failure = failure {
+        fail(failure.index, failure.errorCode, failure.errorMessage)
+        return
+      }
+
+      var passes: [PKPass] = []
+      for (index, data) in downloads.enumerated() {
+        let parsed = Self.parsePasses(from: data ?? Data())
+        guard !parsed.isEmpty else {
+          fail(index, "INVALID_PASS", "Failed to parse pass data")
+          return
+        }
+        passes.append(contentsOf: parsed)
+      }
+
+      self.showViewController(with: Self.uniquePasses(passes))
+    }
   }
 
   // MARK: - hasPass
@@ -155,16 +222,22 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   // MARK: - Show controller
 
   @MainActor private func showViewController(with data: Data) {
-    let parsedPasses = Self.parsePasses(from: data)
+    let parsedPasses = Self.uniquePasses(Self.parsePasses(from: data))
     guard !parsedPasses.isEmpty else {
       addPassCompletion(false, "INVALID_PASS", "Failed to parse pass data")
       return
     }
+    showViewController(with: parsedPasses)
+  }
 
+  @MainActor private func showViewController(with parsedPasses: [PKPass]) {
     let library = PKPassLibrary()
     let missingPasses = parsedPasses.filter { !library.containsPass($0) }
     guard !missingPasses.isEmpty else {
-      addPassCompletion(false, "PASS_ALREADY_EXISTS", "This pass is already in your wallet")
+      let message = parsedPasses.count == 1
+        ? "This pass is already in your wallet"
+        : "These passes are already in your wallet"
+      addPassCompletion(false, "PASS_ALREADY_EXISTS", message)
       return
     }
 
@@ -250,25 +323,72 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
     return url
   }
 
-  // Accepts a single .pkpass or a .pkpasses bundle of them.
+  // A GET task with custom headers (for authentication), not started yet. Calls
+  // back off the main thread with the body, or with an error code and message.
+  private static func makeTask(_ url: URL,
+                               headers: [String: Any]?,
+                               completion: @escaping (Data?, String?, String?) -> Void) -> URLSessionDataTask {
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    for (key, value) in headers ?? [:] {
+      if let text = headerValue(value) {
+        request.setValue(text, forHTTPHeaderField: key)
+      }
+    }
+
+    return URLSession.shared.dataTask(with: request) { data, response, error in
+      if let error = error {
+        completion(nil, "NETWORK_ERROR", error.localizedDescription)
+        return
+      }
+      if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+        completion(nil, "HTTP_ERROR", "HTTP \(httpResponse.statusCode)")
+        return
+      }
+      guard let data = data else {
+        completion(nil, "INVALID_DATA", "No data received")
+        return
+      }
+      completion(data, nil, nil)
+    }
+  }
+
+  // Header values come from JS untyped: a number or boolean is sent as text,
+  // null is skipped.
+  private static func headerValue(_ value: Any) -> String? {
+    switch value {
+    case let text as String:
+      return text
+    case let number as NSNumber where CFGetTypeID(number) == CFBooleanGetTypeID():
+      return number.boolValue ? "true" : "false"
+    case let number as NSNumber:
+      return number.stringValue
+    default:
+      return nil
+    }
+  }
+
+  // Accepts a single .pkpass or a .pkpasses bundle of them. Callers remove
+  // duplicates with uniquePasses.
   private static func parsePasses(from data: Data) -> [PKPass] {
     if let pass = try? PKPass(data: data) {
       return [pass]
     }
 
     var passes: [PKPass] = []
-    var seen = Set<String>()
     for (index, entry) in PassesBundle.extractPassEntries(from: data).enumerated() {
       do {
-        let pass = try PKPass(data: entry)
-        if seen.insert(pass.passTypeIdentifier + "\n" + pass.serialNumber).inserted {
-          passes.append(pass)
-        }
+        passes.append(try PKPass(data: entry))
       } catch {
         print("wallet", "Failed to parse pass \(index) in bundle:", error.localizedDescription)
       }
     }
     return passes
+  }
+
+  private static func uniquePasses(_ passes: [PKPass]) -> [PKPass] {
+    var seen = Set<String>()
+    return passes.filter { seen.insert($0.passTypeIdentifier + "\n" + $0.serialNumber).inserted }
   }
 
   private func addPassCompletion(_ success: Bool, _ errorCode: String?, _ errorMessage: String?) {

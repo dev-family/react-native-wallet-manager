@@ -79,15 +79,16 @@ import WalletManager from 'react-native-wallet-manager';
 
 ## API
 
-| Method                                                                                                                   | Parameters                                      | iOS | Android |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | --- | ------- |
-| [`canAddPasses()`](#canaddpasses)                                                                                        | None                                            | ✅  | ✅      |
-| [`addPassToGoogleWallet(jwt: string)`](#addpasstogooglewalletjwt-string)                                                 | `jwt: string`                                   | ❌  | ✅      |
-| [`addPassFromUrl(url: string, headers?: Record<string, string>)`](#addpassfromurlurl-string-headers-recordstring-string) | `url: string, headers?: Record<string, string>` | ✅  | ✅      |
-| [`hasPass(cardIdentifier: string, serialNumber?: string)`](#haspasscardidentifier-string-serialnumber-string)            | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`removePass(cardIdentifier: string, serialNumber?: string)`](#removepasscardidentifier-string-serialnumber-string)      | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`viewInWallet(cardIdentifier: string, serialNumber?: string)`](#viewinwalletcardidentifier-string-serialnumber-string)  | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`showAddPassControllerFromFile(filePath: string)`](#showaddpasscontrollerfromfilefilepath-string)                       | `filePath: string`                              | ✅  | ❌      |
+| Method                                                                                                                             | Parameters                                         | iOS | Android |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --- | ------- |
+| [`canAddPasses()`](#canaddpasses)                                                                                                  | None                                               | ✅  | ✅      |
+| [`addPassToGoogleWallet(jwt: string)`](#addpasstogooglewalletjwt-string)                                                           | `jwt: string`                                      | ❌  | ✅      |
+| [`addPassFromUrl(url: string, headers?: Record<string, string>)`](#addpassfromurlurl-string-headers-recordstring-string)           | `url: string, headers?: Record<string, string>`    | ✅  | ✅      |
+| [`addPassesFromUrls(urls: string[], headers?: Record<string, string>)`](#addpassesfromurlsurls-string-headers-recordstring-string) | `urls: string[], headers?: Record<string, string>` | ✅  | ❌      |
+| [`hasPass(cardIdentifier: string, serialNumber?: string)`](#haspasscardidentifier-string-serialnumber-string)                      | `cardIdentifier: string, serialNumber?: string`    | ✅  | ❌      |
+| [`removePass(cardIdentifier: string, serialNumber?: string)`](#removepasscardidentifier-string-serialnumber-string)                | `cardIdentifier: string, serialNumber?: string`    | ✅  | ❌      |
+| [`viewInWallet(cardIdentifier: string, serialNumber?: string)`](#viewinwalletcardidentifier-string-serialnumber-string)            | `cardIdentifier: string, serialNumber?: string`    | ✅  | ❌      |
+| [`showAddPassControllerFromFile(filePath: string)`](#showaddpasscontrollerfromfilefilepath-string)                                 | `filePath: string`                                 | ✅  | ❌      |
 
 ### Notes
 
@@ -95,7 +96,9 @@ All methods return a `Promise` that resolves with the result of the operation or
 
 On a platform where a method is not supported (❌ in the table), the promise rejects with an `Error` that has no `code`.
 
-Only one pass can be added at a time. While `addPassFromUrl`, `addPassToGoogleWallet` or `showAddPassControllerFromFile` is downloading a pass or showing the Wallet sheet, another call to `addPassFromUrl` or `addPassToGoogleWallet` rejects with `ADD_PASS_IN_PROGRESS`, and `showAddPassControllerFromFile` resolves with `false`.
+Only one request can add passes at a time. While `addPassFromUrl`, `addPassesFromUrls`, `addPassToGoogleWallet` or `showAddPassControllerFromFile` is downloading passes or showing the Wallet sheet, another call to `addPassFromUrl`, `addPassesFromUrls` or `addPassToGoogleWallet` rejects with `ADD_PASS_IN_PROGRESS`, and `showAddPassControllerFromFile` resolves with `false`.
+
+The `headers` of `addPassFromUrl` and `addPassesFromUrls` are sent with every request, to every URL in the list. Pass an `Authorization` header only for URLs that should receive it. Header values should be strings. On iOS, a number or boolean value is sent as text, other values such as `null` are skipped.
 
 ### Access to passes (iOS)
 
@@ -107,12 +110,12 @@ Rejected promises carry an error with a `code`. The `WalletErrorCode` type cover
 
 | Code                   | Platform     | Meaning                                                                   |
 | ---------------------- | ------------ | ------------------------------------------------------------------------- |
-| `INVALID_URL`          | iOS, Android | The URL cannot be parsed or has no scheme.                                |
+| `INVALID_URL`          | iOS, Android | The URL cannot be parsed or has no scheme, or the list of URLs is empty.  |
 | `NETWORK_ERROR`        | iOS, Android | The request failed.                                                       |
 | `HTTP_ERROR`           | iOS, Android | The server responded with a status outside 200–299.                       |
 | `ADD_PASS_IN_PROGRESS` | iOS, Android | Another pass is being added.                                              |
 | `USER_CANCELLED`       | iOS          | The Apple Wallet sheet was closed without adding the passes.              |
-| `PASS_ALREADY_EXISTS`  | iOS          | The pass, or every pass of a bundle, is already in Apple Wallet.          |
+| `PASS_ALREADY_EXISTS`  | iOS          | The pass, or every pass of a bundle or URL list, is already in Wallet.    |
 | `INVALID_PASS`         | iOS          | The data is not a valid `.pkpass` or contains no valid pass in a bundle.  |
 | `INVALID_DATA`         | iOS          | The response has no body.                                                 |
 | `NO_VIEW_CONTROLLER`   | iOS          | No view controller is available to show the sheet.                        |
@@ -181,7 +184,7 @@ Adds a pass from a specified URL. This method is supported on both iOS and Andro
 
 ### Pass bundles (iOS)
 
-A `.pkpasses` bundle with several passes is shown in a single Apple Wallet sheet, which adds all of them at once. Passes that are already in Wallet are left out of the sheet. The promise resolves with `true` after the passes are added and rejects with `USER_CANCELLED` if the sheet is closed. It rejects with `PASS_ALREADY_EXISTS` only when every pass of the bundle is already in Wallet, and with `INVALID_PASS` when no pass in the bundle can be read.
+A `.pkpasses` bundle with several passes is shown in a single Apple Wallet sheet, which adds all of them at once. For several `.pkpass` URLs see [`addPassesFromUrls`](#addpassesfromurlsurls-string-headers-recordstring-string). Passes that are already in Wallet are left out of the sheet. The promise resolves with `true` after the passes are added and rejects with `USER_CANCELLED` if the sheet is closed. It rejects with `PASS_ALREADY_EXISTS` only when every pass of the bundle is already in Wallet, and with `INVALID_PASS` when no pass in the bundle can be read.
 
 A bundle is a ZIP archive of `.pkpass` files, stored or deflated, ZIP64 included. Other files, entries that cannot be read and duplicate passes are skipped. Encrypted archives are not supported.
 
@@ -211,6 +214,35 @@ const addPassWithAuth = async () => {
     );
     console.log(result);
   } catch (e) {
+    console.log(e.code, e.message);
+  }
+};
+```
+
+## addPassesFromUrls(urls: string[], headers?: Record<string, string>)
+
+Downloads several passes and shows them in a single Apple Wallet sheet, which adds all of them at once. Use it when the passes come as separate `.pkpass` files, for example one per ticket. This method is supported on iOS only. On Android, several passes are added with one JWT through `addPassToGoogleWallet` or `addPassFromUrl`.
+
+Every URL is downloaded in parallel with the same headers and can return a `.pkpass` file or a `.pkpasses` bundle. A repeated URL is downloaded once. Duplicate passes and passes that are already in Wallet are left out of the sheet. The promise resolves with `true` after the passes are added and rejects with `USER_CANCELLED` if the sheet is closed, with `PASS_ALREADY_EXISTS` if every pass is already in Wallet and with `INVALID_URL` if the array is empty or one of the URLs is invalid. If a download fails (`NETWORK_ERROR`, `HTTP_ERROR` or `INVALID_DATA`), the other downloads are cancelled, the promise rejects with the error of the download that failed first and the sheet is not shown. If every download succeeds but one of them contains no valid pass, the promise rejects with `INVALID_PASS`. An error of a single URL names it by its position in the array, for example `URL 2: HTTP 404`.
+
+### Parameters
+
+- `urls` (string[]): The URLs of the passes.
+- `headers` (object, optional): HTTP headers sent with every request, for example for authentication.
+
+### Example
+
+```javascript
+const addTickets = async (urls) => {
+  try {
+    const result = await WalletManager.addPassesFromUrls(urls, {
+      Authorization: 'Bearer <token>',
+    });
+    console.log(result);
+  } catch (e) {
+    if (e.code === 'USER_CANCELLED') {
+      return;
+    }
     console.log(e.code, e.message);
   }
 };
