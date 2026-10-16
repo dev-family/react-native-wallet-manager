@@ -99,11 +99,12 @@
 - iOS: if the Apple Wallet sheet cannot be shown, the pending promise rejects with `CONTROLLER_ERROR` on the next call instead of never settling
 - iOS: run the module on the main thread, PassKit sheets were presented from a background queue
 - iOS: `addPassFromUrl` rejects a URL without a scheme with `INVALID_URL` and percent-encodes invalid characters on every iOS version. Before, iOS 16 and earlier rejected such URLs with `INVALID_URL`, iOS 17 and later with `NETWORK_ERROR`
+- Without the New Architecture, importing the library no longer crashes the app. Method calls reject with an error that says the New Architecture is required and points to 1.1.3, the README explains how to enable it. Refs [#43](https://github.com/dev-family/react-native-wallet-manager/issues/43)
 - Package: ship `react-native.config.js`, exclude `android/.gradle` and drop the Gradle wrapper from the npm tarball
 
 ### Chore
 
 - Example: add Gemfile and refresh Podfile.lock, log the `addPassToGoogleWallet` result
 - Example: add a `.pkpasses` bundle button
-- README: document the real `showAddPassControllerFromFile` name, the `headers` parameter of `addPassFromUrl`, error codes for both platforms and return values; drop the manual `play-services-pay` setup step
+- README: document the real `showAddPassControllerFromFile` name, the `headers` parameter of `addPassFromUrl`, error codes for both platforms, return values, pass visibility on iOS and how to enable the New Architecture; drop the manual `play-services-pay` setup step
 - Ignore `example/android/app/.cxx`
