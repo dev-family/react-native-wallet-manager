@@ -10,6 +10,7 @@ export type WalletErrorCode =
   | 'NETWORK_ERROR'
   | 'HTTP_ERROR'
   | 'USER_CANCELLED'
+  | 'ADD_PASS_IN_PROGRESS'
   // iOS-specific error codes
   | 'INVALID_DATA'
   | 'INVALID_PASS'

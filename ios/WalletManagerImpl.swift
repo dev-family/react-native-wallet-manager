@@ -13,6 +13,11 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   private var passes: [PKPass] = []
   private var passLibrary: PKPassLibrary?
   private var completion: ((Bool, String?, String?) -> Void)?
+  private var isLoading = false
+  // Weak: a controller that UIKit refused to present is released and stops
+  // blocking new requests.
+  private weak var presentedController: PKAddPassesViewController?
+  private var presentedAt = Date.distantPast
 
   // MARK: - canAddPasses
 
@@ -25,7 +30,10 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
 
   @MainActor @objc
   public func showAddPassControllerFromFile(_ filepath: String) -> Bool {
-
+    guard beginAddPass() else {
+      print("wallet", "Another pass is already being added")
+      return false
+    }
     guard let data = try? Data(contentsOf: URL(fileURLWithPath: filepath)) else {
       print("File not found or empty")
       return false
@@ -45,6 +53,12 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
       completion(false, "INVALID_URL", "The pass URL is invalid")
       return
     }
+    guard beginAddPass() else {
+      completion(false, "ADD_PASS_IN_PROGRESS", "Another pass is already being added")
+      return
+    }
+    self.completion = completion
+    self.isLoading = true
 
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
@@ -57,31 +71,25 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
     }
 
     URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-      guard let self = self else { return }
-
-      if let error = error {
-        DispatchQueue.main.async {
-          completion(false, "NETWORK_ERROR", error.localizedDescription)
-        }
-        return
-      }
-
-      if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-        DispatchQueue.main.async {
-          completion(false, "HTTP_ERROR", "HTTP \(httpResponse.statusCode)")
-        }
-        return
-      }
-
-      guard let data = data else {
-        DispatchQueue.main.async {
-          completion(false, "INVALID_DATA", "No data received")
-        }
-        return
-      }
-
       DispatchQueue.main.async {
-        self.completion = completion
+        guard let self = self else { return }
+        self.isLoading = false
+
+        if let error = error {
+          self.addPassCompletion(false, "NETWORK_ERROR", error.localizedDescription)
+          return
+        }
+
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+          self.addPassCompletion(false, "HTTP_ERROR", "HTTP \(httpResponse.statusCode)")
+          return
+        }
+
+        guard let data = data else {
+          self.addPassCompletion(false, "INVALID_DATA", "No data received")
+          return
+        }
+
         self.showViewController(with: data)
       }
     }.resume()
@@ -156,9 +164,6 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
       return
     }
 
-    self.passes = missingPasses
-    self.passLibrary = library
-
     guard let windowScene = UIApplication.shared.connectedScenes
       .compactMap({ $0 as? UIWindowScene })
       .first(where: { $0.activationState == .foregroundActive }),
@@ -182,8 +187,11 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
     }
     controller.delegate = self
 
+    self.passes = missingPasses
+    self.passLibrary = library
+    self.presentedController = controller
+    self.presentedAt = Date()
     top.present(controller, animated: true)
-
   }
 
   // MARK: - Delegate
@@ -191,21 +199,43 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   @MainActor public func addPassesViewControllerDidFinish(_ controller: PKAddPassesViewController) {
     controller.dismiss(animated: true) { [weak self] in
       guard let self = self else { return }
-      if let library = self.passLibrary, !self.passes.isEmpty {
-        let wasAdded = self.passes.contains { library.containsPass($0) }
-        if wasAdded {
-          addPassCompletion(true, nil, nil)
-        } else {
-          addPassCompletion(false, "USER_CANCELLED", "User cancelled or declined to add pass")
-        }
-      }
-      self.passLibrary = nil
+      let passes = self.passes
+      let library = self.passLibrary
       self.passes = []
+      self.passLibrary = nil
+      self.presentedController = nil
       controller.delegate = nil
+
+      guard let library = library, !passes.isEmpty else { return }
+      if passes.contains(where: { library.containsPass($0) }) {
+        self.addPassCompletion(true, nil, nil)
+      } else {
+        self.addPassCompletion(false, "USER_CANCELLED", "User cancelled or declined to add pass")
+      }
     }
   }
 
   // MARK: - Helper
+
+  // One request at a time: a second sheet cannot be presented over the first,
+  // and a second request would replace the pending completion.
+  @MainActor private func beginAddPass() -> Bool {
+    if isLoading {
+      return false
+    }
+    if let controller = presentedController,
+       controller.presentingViewController != nil || Date().timeIntervalSince(presentedAt) < 5 {
+      return false
+    }
+    // The previous sheet never appeared, so its promise is still pending.
+    if completion != nil {
+      addPassCompletion(false, "CONTROLLER_ERROR", "Failed to present pass controller")
+    }
+    passes = []
+    passLibrary = nil
+    presentedController = nil
+    return true
+  }
 
   // Accepts a single .pkpass or a .pkpasses bundle of them.
   private static func parsePasses(from data: Data) -> [PKPass] {

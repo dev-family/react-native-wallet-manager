@@ -25,10 +25,27 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
 
   override fun getName() = NAME
 
+  // One request at a time: a second request would replace the pending promise.
+  // Accessed from the module, network and UI threads.
+  private fun beginAddPass(promise: Promise): Boolean = synchronized(this) {
+    if (addPassPromise != null) {
+      false
+    } else {
+      addPassPromise = promise
+      true
+    }
+  }
+
+  private fun takeAddPassPromise(): Promise? = synchronized(this) {
+    val promise = addPassPromise
+    addPassPromise = null
+    promise
+  }
+
   private val mActivityEventListener = object : BaseActivityEventListener() {
     override fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
       if (requestCode == ADD_TO_GOOGLE_WALLET_REQUEST_CODE) {
-        addPassPromise?.let { promise ->
+        takeAddPassPromise()?.let { promise ->
           when (resultCode) {
             Activity.RESULT_OK -> promise.resolve("Pass successfully added to Google Wallet")
             Activity.RESULT_CANCELED -> promise.reject("RESULT_CANCELED", "The operation was canceled by the user.")
@@ -37,7 +54,6 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
               promise.reject("UNKNOWN_ERROR", "An error occurred: $error")
             }
           }
-          addPassPromise = null
         }
       }
     }
@@ -64,11 +80,15 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
     override fun addPassToGoogleWallet(jwt: String, promise: Promise) {
         val activity = reactApplicationContext.currentActivity
         if (activity != null) {
-            addPassPromise = promise
+            if (!beginAddPass(promise)) {
+                promise.reject("ADD_PASS_IN_PROGRESS", "Another pass is already being added")
+                return
+            }
             try {
                 walletClient.savePassesJwt(jwt, activity, ADD_TO_GOOGLE_WALLET_REQUEST_CODE)
             } catch (e: Exception) {
                 e.printStackTrace()
+                takeAddPassPromise()
                 when (e) {
                     is com.google.android.gms.common.api.ApiException -> {
                         val statusCode = e.statusCode
@@ -86,7 +106,6 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
                         )
                     }
                 }
-                addPassPromise = null
             }
         } else {
             promise.reject("NO_ACTIVITY", "Current activity is unavailable.")
@@ -113,6 +132,11 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
       return
     }
 
+    if (!beginAddPass(promise)) {
+      promise.reject("ADD_PASS_IN_PROGRESS", "Another pass is already being added")
+      return
+    }
+
     // Run network request on background thread
     Thread {
       var connection: HttpURLConnection? = null
@@ -131,7 +155,7 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
 
         val responseCode = connection.responseCode
         if (responseCode !in 200..299) {
-          promise.reject("HTTP_ERROR", "HTTP $responseCode")
+          takeAddPassPromise()?.reject("HTTP_ERROR", "HTTP $responseCode")
           return@Thread
         }
 
@@ -139,25 +163,24 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
 
         // Save to Google Wallet on main thread
         activity.runOnUiThread {
-          addPassPromise = promise
           try {
             walletClient.savePassesJwt(jwt, activity, ADD_TO_GOOGLE_WALLET_REQUEST_CODE)
           } catch (e: Exception) {
-            addPassPromise = null
+            val pending = takeAddPassPromise()
             when (e) {
               is com.google.android.gms.common.api.ApiException -> {
                 val statusCode = e.statusCode
                 val statusMessage = com.google.android.gms.common.api.CommonStatusCodes.getStatusCodeString(statusCode)
-                promise.reject("API_ERROR", "Google Pay API error: $statusCode - $statusMessage")
+                pending?.reject("API_ERROR", "Google Pay API error: $statusCode - $statusMessage")
               }
               else -> {
-                promise.reject("GENERAL_ERROR", e.message ?: "Failed to save pass")
+                pending?.reject("GENERAL_ERROR", e.message ?: "Failed to save pass")
               }
             }
           }
         }
       } catch (e: Exception) {
-        promise.reject("NETWORK_ERROR", e.message ?: "Network request failed")
+        takeAddPassPromise()?.reject("NETWORK_ERROR", e.message ?: "Network request failed")
       } finally {
         connection?.disconnect()
       }
