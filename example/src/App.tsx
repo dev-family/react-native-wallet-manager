@@ -53,6 +53,18 @@ export default function App() {
     }
   };
 
+  const addPassesFromUrls = async () => {
+    try {
+      const result = await WalletManager.addPassesFromUrls([
+        'https://github.com/dev-family/react-native-wallet-manager/blob/main/example/resources/SamplePasses/Coupon.pkpass?raw=true',
+        'https://github.com/dev-family/react-native-wallet-manager/blob/main/example/resources/SamplePasses/Event.pkpass?raw=true',
+      ]);
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const removePass = async () => {
     try {
       const result = await WalletManager.removePass(
@@ -97,6 +109,7 @@ export default function App() {
         {Platform.OS === 'ios' && (
           <>
             <Button onPress={addPassesBundle} title="Add passes bundle" />
+            <Button onPress={addPassesFromUrls} title="Add passes from URLs" />
             <Button onPress={removePass} title="Remove pass" />
             <Button onPress={hasPass} title="Has pass" />
             <Button onPress={viewPass} title="View pass" />
