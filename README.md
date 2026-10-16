@@ -176,7 +176,7 @@ const addPassToGoogleWallet = async () => {
 Adds a pass from a specified URL. This method is supported on both iOS and Android.
 
 - On iOS, it downloads the pass and shows the Apple Wallet sheet to add it. The promise resolves with `true` once the pass is added. It rejects with `USER_CANCELLED` if the sheet is closed and with `PASS_ALREADY_EXISTS` if the pass is already in Wallet.
-- On Android, the response body must be a Google Wallet JWT. It is passed to Google Wallet, and the promise resolves and rejects the same way as in `addPassToGoogleWallet`.
+- On Android, the response body must be a Google Wallet JWT. It is passed to Google Wallet, and the promise resolves and rejects the same way as in `addPassToGoogleWallet`. It resolves with the message string, although the TypeScript type is `Promise<boolean>`.
 
 ### Parameters
 
