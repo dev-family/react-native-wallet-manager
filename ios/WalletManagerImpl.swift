@@ -330,6 +330,9 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
                                completion: @escaping (Data?, String?, String?) -> Void) -> URLSessionDataTask {
     var request = URLRequest(url: url)
     request.httpMethod = "GET"
+    // A pass at the same URL can be updated on the server, never reuse a
+    // cached response.
+    request.cachePolicy = .reloadIgnoringLocalCacheData
     for (key, value) in headers ?? [:] {
       if let text = headerValue(value) {
         request.setValue(text, forHTTPHeaderField: key)

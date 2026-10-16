@@ -103,6 +103,7 @@
 - Without the New Architecture, importing the library no longer crashes the app. Method calls reject with an error that says the New Architecture is required and points to 1.1.3, the README explains how to enable it. Refs [#43](https://github.com/dev-family/react-native-wallet-manager/issues/43)
 - iOS: `addPassFromUrl` no longer crashes when a header value is not a string. A number or boolean is sent as text, `null` is skipped
 - Android: `addPassFromUrl` sends a number or boolean header value as text and skips `null`. Before, such a value rejected with `NETWORK_ERROR`
+- iOS: a pass is always downloaded again, a cached response for the same URL is never used. Before, a cached response could be reused and an updated pass was not downloaded
 - Package: ship `react-native.config.js`, exclude `android/.gradle` and drop the Gradle wrapper from the npm tarball
 
 ### Chore
