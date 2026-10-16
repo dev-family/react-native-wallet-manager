@@ -98,7 +98,7 @@ On a platform where a method is not supported (❌ in the table), the promise re
 
 Only one request can add passes at a time. While `addPassFromUrl`, `addPassesFromUrls`, `addPassToGoogleWallet` or `showAddPassControllerFromFile` is downloading passes or showing the Wallet sheet, another call to `addPassFromUrl`, `addPassesFromUrls` or `addPassToGoogleWallet` rejects with `ADD_PASS_IN_PROGRESS`, and `showAddPassControllerFromFile` resolves with `false`.
 
-The `headers` of `addPassFromUrl` and `addPassesFromUrls` are sent with every request, to every URL in the list. Pass an `Authorization` header only for URLs that should receive it. Header values should be strings. On iOS, a number or boolean value is sent as text, other values such as `null` are skipped.
+The `headers` of `addPassFromUrl` and `addPassesFromUrls` are sent with every request, to every URL in the list. Pass an `Authorization` header only for URLs that should receive it. Header values should be strings. A number or boolean value is sent as text, other values such as `null` are skipped.
 
 ### Access to passes (iOS)
 

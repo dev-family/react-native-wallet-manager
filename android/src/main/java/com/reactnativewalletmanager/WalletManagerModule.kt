@@ -7,6 +7,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableType;
 import com.google.android.gms.pay.PayClient;
 import com.google.android.gms.pay.Pay;
 import com.google.android.gms.pay.PayApiAvailabilityStatus;
@@ -150,7 +151,7 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
           val iterator = map.keySetIterator()
           while (iterator.hasNextKey()) {
             val key = iterator.nextKey()
-            connection.setRequestProperty(key, map.getString(key))
+            headerValue(map, key)?.let { connection.setRequestProperty(key, it) }
           }
         }
 
@@ -187,6 +188,19 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
       }
     }.start()
   }
+
+  // Header values come from JS untyped: a number or boolean is sent as text,
+  // null and other values are skipped.
+  private fun headerValue(map: ReadableMap, key: String): String? =
+    when (map.getType(key)) {
+      ReadableType.String -> map.getString(key)
+      ReadableType.Boolean -> map.getBoolean(key).toString()
+      ReadableType.Number -> {
+        val number = map.getDouble(key)
+        if (number % 1.0 == 0.0 && Math.abs(number) < 1e15) number.toLong().toString() else number.toString()
+      }
+      else -> null
+    }
 
   override fun addPassesFromUrls(urls: ReadableArray, headers: ReadableMap?, promise: Promise) {
     promise.reject("UNSUPPORTED_PLATFORM", "This function is not supported on Android.")
