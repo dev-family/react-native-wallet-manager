@@ -22,6 +22,7 @@ This library provides integration with both Apple Wallet on iOS and Google Walle
 ## Installation
 
 - react-native-wallet-manager V2 requires the new architecture/TurboModules to be enabled
+- iOS 13.0 or later
 - for old architecture please use react-native-wallet-manager V1.1.3
 
 If a method rejects with `native module NativeWalletManager not found`, the New Architecture is disabled in the app (the default before React Native 0.76). Enable it and rebuild the app:

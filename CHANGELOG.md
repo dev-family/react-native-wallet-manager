@@ -104,6 +104,7 @@
 - iOS: `addPassFromUrl` no longer crashes when a header value is not a string. A number or boolean is sent as text, `null` is skipped
 - Android: `addPassFromUrl` sends a number or boolean header value as text and skips `null`. Before, such a value rejected with `NETWORK_ERROR`
 - iOS: a pass is always downloaded again, a cached response for the same URL is never used. Before, a cached response could be reused and an updated pass was not downloaded
+- iOS: the podspec declares iOS 13.0, the version the library actually requires. It declared 10.0, but the code that presents the Wallet sheet does not build for iOS 12 and earlier
 - Package: ship `react-native.config.js`, exclude `android/.gradle` and drop the Gradle wrapper from the npm tarball
 
 ### Chore
