@@ -10,7 +10,7 @@ import PassKit
 
 @objc(WalletManagerImpl)
 public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControllerDelegate {
-  private var pass: PKPass?
+  private var passes: [PKPass] = []
   private var passLibrary: PKPassLibrary?
   private var completion: ((Bool, String?, String?) -> Void)?
 
@@ -143,18 +143,21 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   // MARK: - Show controller
 
   @MainActor private func showViewController(with data: Data) {
-    guard let pass = try? PKPass(data: data) else {
+    let parsedPasses = Self.parsePasses(from: data)
+    guard !parsedPasses.isEmpty else {
       addPassCompletion(false, "INVALID_PASS", "Failed to parse pass data")
       return
     }
 
-    self.pass = pass
-    self.passLibrary = PKPassLibrary()
-
-    if self.passLibrary?.containsPass(pass) == true {
+    let library = PKPassLibrary()
+    let missingPasses = parsedPasses.filter { !library.containsPass($0) }
+    guard !missingPasses.isEmpty else {
       addPassCompletion(false, "PASS_ALREADY_EXISTS", "This pass is already in your wallet")
       return
     }
+
+    self.passes = missingPasses
+    self.passLibrary = library
 
     guard let windowScene = UIApplication.shared.connectedScenes
       .compactMap({ $0 as? UIWindowScene })
@@ -170,7 +173,10 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
       top = presented
     }
 
-    guard let controller = PKAddPassesViewController(pass: pass) else {
+    let controller = missingPasses.count == 1
+      ? PKAddPassesViewController(pass: missingPasses[0])
+      : PKAddPassesViewController(passes: missingPasses)
+    guard let controller = controller else {
       addPassCompletion(false, "CONTROLLER_ERROR", "Failed to create pass controller")
       return
     }
@@ -185,10 +191,8 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   @MainActor public func addPassesViewControllerDidFinish(_ controller: PKAddPassesViewController) {
     controller.dismiss(animated: true) { [weak self] in
       guard let self = self else { return }
-      if
-         let pass = self.pass,
-         let library = self.passLibrary {
-        let wasAdded = library.containsPass(pass)
+      if let library = self.passLibrary, !self.passes.isEmpty {
+        let wasAdded = self.passes.contains { library.containsPass($0) }
         if wasAdded {
           addPassCompletion(true, nil, nil)
         } else {
@@ -196,12 +200,33 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
         }
       }
       self.passLibrary = nil
-      self.pass = nil
+      self.passes = []
       controller.delegate = nil
     }
   }
 
   // MARK: - Helper
+
+  // Accepts a single .pkpass or a .pkpasses bundle of them.
+  private static func parsePasses(from data: Data) -> [PKPass] {
+    if let pass = try? PKPass(data: data) {
+      return [pass]
+    }
+
+    var passes: [PKPass] = []
+    var seen = Set<String>()
+    for (index, entry) in PassesBundle.extractPassEntries(from: data).enumerated() {
+      do {
+        let pass = try PKPass(data: entry)
+        if seen.insert(pass.passTypeIdentifier + "\n" + pass.serialNumber).inserted {
+          passes.append(pass)
+        }
+      } catch {
+        print("wallet", "Failed to parse pass \(index) in bundle:", error.localizedDescription)
+      }
+    }
+    return passes
+  }
 
   private func addPassCompletion(_ success: Bool, _ errorCode: String?, _ errorMessage: String?) {
     self.completion?(success, errorCode, errorMessage)
