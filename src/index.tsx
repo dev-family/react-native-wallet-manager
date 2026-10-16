@@ -2,7 +2,8 @@ import { Platform } from 'react-native';
 import NativeWalletManager from './specs/NativeWalletManager';
 
 /**
- * Error codes that can be thrown by addPassFromUrl
+ * Error codes of the promises returned by addPassFromUrl, addPassesFromUrls
+ * and addPassToGoogleWallet
  */
 export type WalletErrorCode =
   // Shared error codes
@@ -23,7 +24,8 @@ export type WalletErrorCode =
   | 'GENERAL_ERROR';
 
 /**
- * Error object thrown when addPassFromUrl fails
+ * Error object thrown when addPassFromUrl, addPassesFromUrls or
+ * addPassToGoogleWallet fails
  */
 export type WalletError = Error & {
   code: WalletErrorCode;
@@ -60,6 +62,15 @@ export default {
   },
   addPassFromUrl: async (url: string, headers?: Record<string, string>) => {
     return await getNativeModule().addPassFromUrl(url, headers ?? null);
+  },
+  addPassesFromUrls: async (
+    urls: ReadonlyArray<string>,
+    headers?: Record<string, string>
+  ) => {
+    if (Platform.OS === 'android') {
+      throw new Error('addPassesFromUrls method not available on Android');
+    }
+    return await getNativeModule().addPassesFromUrls(urls, headers ?? null);
   },
   hasPass: async (cardIdentifier: string, serialNumber?: string) => {
     if (Platform.OS === 'android') {

@@ -4,6 +4,10 @@ export interface Spec extends TurboModule {
   canAddPasses(): Promise<boolean>;
   showAddPassControllerFromFile(url: string): Promise<boolean>;
   addPassFromUrl(url: string, headers: Object | null): Promise<boolean>;
+  addPassesFromUrls(
+    urls: ReadonlyArray<string>,
+    headers: Object | null
+  ): Promise<boolean>;
   hasPass(
     cardIdentifier: string,
     serialNumber: string | null

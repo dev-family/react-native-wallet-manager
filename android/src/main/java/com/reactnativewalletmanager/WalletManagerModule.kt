@@ -5,6 +5,7 @@ import android.content.Intent;
 import com.facebook.react.bridge.BaseActivityEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.pay.PayClient;
 import com.google.android.gms.pay.Pay;
@@ -185,6 +186,10 @@ class WalletManagerModule(reactContext: ReactApplicationContext) : NativeWalletM
         connection?.disconnect()
       }
     }.start()
+  }
+
+  override fun addPassesFromUrls(urls: ReadableArray, headers: ReadableMap?, promise: Promise) {
+    promise.reject("UNSUPPORTED_PLATFORM", "This function is not supported on Android.")
   }
 
   override fun hasPass(cardIdentifier: String, serialNumber: String?, promise: Promise) {
