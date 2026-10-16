@@ -42,6 +42,17 @@ export default function App() {
     }
   };
 
+  const addPassesBundle = async () => {
+    try {
+      const result = await WalletManager.addPassFromUrl(
+        'https://github.com/dev-family/react-native-wallet-manager/blob/main/example/resources/passes.pkpasses?raw=true'
+      );
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const removePass = async () => {
     try {
       const result = await WalletManager.removePass(
@@ -85,6 +96,7 @@ export default function App() {
         <Button onPress={canAddPasses} title="Can add passes" />
         {Platform.OS === 'ios' && (
           <>
+            <Button onPress={addPassesBundle} title="Add passes bundle" />
             <Button onPress={removePass} title="Remove pass" />
             <Button onPress={hasPass} title="Has pass" />
             <Button onPress={viewPass} title="View pass" />
