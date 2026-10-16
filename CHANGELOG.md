@@ -110,6 +110,6 @@
 ### Chore
 
 - Example: add Gemfile and refresh Podfile.lock, log the `addPassToGoogleWallet` result
-- Example: add a `.pkpasses` bundle button
+- Example: add a `.pkpasses` bundle button and an `addPassesFromUrls` button
 - README: document the real `showAddPassControllerFromFile` name, the `headers` parameter of `addPassFromUrl`, error codes for both platforms, return values, pass visibility on iOS and how to enable the New Architecture; drop the manual `play-services-pay` setup step
 - Ignore `example/android/app/.cxx`
