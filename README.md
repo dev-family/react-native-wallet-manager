@@ -55,16 +55,7 @@ cd ios && pod install
 
 ### Android
 
-To enable Google Wallet functionality on Android, you need to add the Google Play Services dependency to your project. Follow these steps:
-
-1. Open the `android/app/build.gradle` file in your project.
-2. In the `dependencies` section, add the following line with the latest version of `play-services-pay`:
-
-   ```bash
-   implementation "com.google.android.gms:play-services-pay:<latest_version>"
-   ```
-
-Replace `<latest_version>` with the most recent version number available. You can find the latest version on the [Google Play Services release notes page](https://developers.google.com/android/guides/releases).
+No extra setup is needed. The library already depends on `com.google.android.gms:play-services-pay`. The device needs Google Play services and a Google account to save passes.
 
 ## Usage
 
@@ -81,19 +72,50 @@ import WalletManager from 'react-native-wallet-manager';
 
 ## API
 
-| Method                                                                                                                  | Parameters                                      | iOS | Android |
-| ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | --- | ------- |
-| [`canAddPasses()`](#canaddpasses)                                                                                       | None                                            | ✅  | ✅      |
-| [`addPassToGoogleWallet(jwt: string)`](#addpasstogooglewalletjwt-string)                                                | `jwt: string`                                   | ❌  | ✅      |
-| [`addPassFromUrl(url: string)`](#addpassfromurlurl-string)                                                              | `url: string`                                   | ✅  | ✅      |
-| [`hasPass(cardIdentifier: string, serialNumber?: string)`](#haspasscardidentifier-string-serialnumber-string)           | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`removePass(cardIdentifier: string, serialNumber?: string)`](#removepasscardidentifier-string-serialnumber-string)     | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`viewInWallet(cardIdentifier: string, serialNumber?: string)`](#viewinwalletcardidentifier-string-serialnumber-string) | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
-| [`showViewControllerWithData(filePath: string)`](#showviewcontrollerwithdatafilepath-string)                            | `filePath: string`                              | ✅  | ❌      |
+| Method                                                                                                                   | Parameters                                      | iOS | Android |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | --- | ------- |
+| [`canAddPasses()`](#canaddpasses)                                                                                        | None                                            | ✅  | ✅      |
+| [`addPassToGoogleWallet(jwt: string)`](#addpasstogooglewalletjwt-string)                                                 | `jwt: string`                                   | ❌  | ✅      |
+| [`addPassFromUrl(url: string, headers?: Record<string, string>)`](#addpassfromurlurl-string-headers-recordstring-string) | `url: string, headers?: Record<string, string>` | ✅  | ✅      |
+| [`hasPass(cardIdentifier: string, serialNumber?: string)`](#haspasscardidentifier-string-serialnumber-string)            | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
+| [`removePass(cardIdentifier: string, serialNumber?: string)`](#removepasscardidentifier-string-serialnumber-string)      | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
+| [`viewInWallet(cardIdentifier: string, serialNumber?: string)`](#viewinwalletcardidentifier-string-serialnumber-string)  | `cardIdentifier: string, serialNumber?: string` | ✅  | ❌      |
+| [`showAddPassControllerFromFile(filePath: string)`](#showaddpasscontrollerfromfilefilepath-string)                       | `filePath: string`                              | ✅  | ❌      |
 
 ### Notes
 
 All methods return a `Promise` that resolves with the result of the operation or rejects if an error occurs.
+
+On a platform where a method is not supported (❌ in the table), the promise rejects with an `Error` that has no `code`.
+
+Only one pass can be added at a time. While `addPassFromUrl`, `addPassToGoogleWallet` or `showAddPassControllerFromFile` is downloading a pass or showing the Wallet sheet, another call to `addPassFromUrl` or `addPassToGoogleWallet` rejects with `ADD_PASS_IN_PROGRESS`, and `showAddPassControllerFromFile` resolves with `false`.
+
+### Access to passes (iOS)
+
+`hasPass`, `removePass` and `viewInWallet` only see passes whose pass type identifier is allowed by the app's Wallet capability. By default the capability allows all pass types of your team. Passes of other teams are not visible to the app. Adding a pass does not depend on this.
+
+## Error codes
+
+Rejected promises carry an error with a `code`. The `WalletErrorCode` type covers every code below except the Android-only `RESULT_CANCELED`, `UNKNOWN_ERROR` and `ERROR`.
+
+| Code                   | Platform     | Meaning                                                                   |
+| ---------------------- | ------------ | ------------------------------------------------------------------------- |
+| `INVALID_URL`          | iOS, Android | The URL cannot be parsed or has no scheme.                                |
+| `NETWORK_ERROR`        | iOS, Android | The request failed.                                                       |
+| `HTTP_ERROR`           | iOS, Android | The server responded with a status outside 200–299.                       |
+| `ADD_PASS_IN_PROGRESS` | iOS, Android | Another pass is being added.                                              |
+| `USER_CANCELLED`       | iOS          | The Apple Wallet sheet was closed without adding the passes.              |
+| `PASS_ALREADY_EXISTS`  | iOS          | The pass, or every pass of a bundle, is already in Apple Wallet.          |
+| `INVALID_PASS`         | iOS          | The data is not a valid `.pkpass` or contains no valid pass in a bundle.  |
+| `INVALID_DATA`         | iOS          | The response has no body.                                                 |
+| `NO_VIEW_CONTROLLER`   | iOS          | No view controller is available to show the sheet.                        |
+| `CONTROLLER_ERROR`     | iOS          | The Apple Wallet sheet could not be created or shown.                     |
+| `RESULT_CANCELED`      | Android      | Google Wallet was closed without saving the pass.                         |
+| `NO_ACTIVITY`          | Android      | There is no current activity.                                             |
+| `API_ERROR`            | Android      | Google Pay API returned an error.                                         |
+| `GENERAL_ERROR`        | Android      | Saving to Google Wallet failed for another reason.                        |
+| `UNKNOWN_ERROR`        | Android      | Google Wallet returned an unexpected result.                              |
+| `ERROR`                | Android      | `canAddPasses` could not check the availability of the Google Wallet API. |
 
 ## canAddPasses()
 
@@ -120,6 +142,8 @@ Adds a pass to Google Wallet. This method is only supported on Android.
 
 - `jwt` (string): The JWT token containing the pass information to be added to Google Wallet.
 
+The promise resolves with a message when Google Wallet reports success, also when the pass was already saved. It rejects with `RESULT_CANCELED` when Google Wallet is closed without saving.
+
 _Note:_ In the example below, you'll see a placeholder for the JWT. You need to generate a valid Google Wallet JWT for testing purposes.
 
 ### Example
@@ -136,16 +160,27 @@ const addPassToGoogleWallet = async () => {
 };
 ```
 
-## addPassFromUrl(url: string)
+## addPassFromUrl(url: string, headers?: Record<string, string>)
 
 Adds a pass from a specified URL. This method is supported on both iOS and Android.
 
-- On iOS, it will add the pass to Apple Wallet.
-- On Android, it will open the URL in a browser.
+- On iOS, it downloads the pass and shows the Apple Wallet sheet to add it. The promise resolves with `true` once the pass is added. It rejects with `USER_CANCELLED` if the sheet is closed and with `PASS_ALREADY_EXISTS` if the pass is already in Wallet.
+- On Android, the response body must be a Google Wallet JWT. It is passed to Google Wallet, and the promise resolves and rejects the same way as in `addPassToGoogleWallet`.
 
 ### Parameters
 
-- `url` (string): The URL of the pass file (`.pkpass` file) to be added.
+- `url` (string): The URL of the pass. On iOS it is a `.pkpass` file or a `.pkpasses` bundle, on Android it returns a JWT.
+- `headers` (object, optional): HTTP headers sent with the request, for example for authentication.
+
+### Pass bundles (iOS)
+
+A `.pkpasses` bundle with several passes is shown in a single Apple Wallet sheet, which adds all of them at once. Passes that are already in Wallet are left out of the sheet. The promise resolves with `true` after the passes are added and rejects with `USER_CANCELLED` if the sheet is closed. It rejects with `PASS_ALREADY_EXISTS` only when every pass of the bundle is already in Wallet, and with `INVALID_PASS` when no pass in the bundle can be read.
+
+A bundle is a ZIP archive of `.pkpass` files, stored or deflated, ZIP64 included. Other files, entries that cannot be read and duplicate passes are skipped. Encrypted archives are not supported.
+
+### URLs
+
+`INVALID_URL` means the URL cannot be parsed or has no scheme. On iOS, characters that are not allowed in a URL, such as spaces, are percent-encoded.
 
 ### Examples
 
@@ -160,15 +195,29 @@ const addPass = async () => {
     console.log(e);
   }
 };
+
+const addPassWithAuth = async () => {
+  try {
+    const result = await WalletManager.addPassFromUrl(
+      'https://example.com/passes/ticket.pkpass',
+      { Authorization: 'Bearer <token>' }
+    );
+    console.log(result);
+  } catch (e) {
+    console.log(e.code, e.message);
+  }
+};
 ```
 
 ## hasPass(cardIdentifier: string, serialNumber?: string)
 
 Checks if a pass with a specific identifier exists in the Apple Wallet. This method is only supported on iOS.
 
+The promise resolves with `true` if a matching pass is found and `false` otherwise. See [Access to passes](#access-to-passes-ios).
+
 ### Parameters
 
-- `cardIdentifier` (string): The unique identifier of the pass to check.
+- `cardIdentifier` (string): The pass type identifier, `passTypeIdentifier` in `pass.json`.
 - `serialNumber` (string, optional): The serial number of the pass. This parameter is optional and can be used to further specify the pass.
 
 ### Example
@@ -188,9 +237,11 @@ const hasPass = async () => {
 
 Removes a pass with a specific identifier from the Apple Wallet. This method is only supported on iOS.
 
+The promise resolves with `true` if a matching pass was removed and `false` if none was found. Only the first matching pass is removed, so pass `serialNumber` when several passes share the pass type identifier. See [Access to passes](#access-to-passes-ios).
+
 ### Parameters
 
-- `cardIdentifier` (string): The unique identifier of the pass to remove.
+- `cardIdentifier` (string): The pass type identifier, `passTypeIdentifier` in `pass.json`.
 - `serialNumber` (string, optional): The serial number of the pass. This parameter is optional and can be used to further specify the pass.
 
 ### Example
@@ -212,9 +263,11 @@ const removePass = async () => {
 
 Opens a pass with a specific identifier in Apple Wallet. This method is only supported on iOS.
 
+The promise resolves with `true` if a matching pass is found and `false` otherwise. See [Access to passes](#access-to-passes-ios).
+
 ### Parameters
 
-- `cardIdentifier` (string): The unique identifier of the pass to view.
+- `cardIdentifier` (string): The pass type identifier, `passTypeIdentifier` in `pass.json`.
 - `serialNumber` (string, optional): The serial number of the pass. This parameter is optional and can be used to further specify the pass.
 
 ### Example
@@ -232,21 +285,23 @@ const viewPass = async () => {
 };
 ```
 
-## showViewControllerWithData(filePath: string)
+## showAddPassControllerFromFile(filePath: string)
 
 Displays a view controller to add a pass using the data from the specified file path. This method is only supported on iOS.
 
+The promise resolves with `true` as soon as the file is read, before the pass is parsed. It resolves with `false` when the file cannot be read or another pass is being added. It does not report whether the pass was added.
+
 ### Parameters
 
-- `filePath` (string): The path to the `.pkpass` file containing the pass data to be added to Apple Wallet.
+- `filePath` (string): The path to a `.pkpass` file or a `.pkpasses` bundle. All passes of a bundle are shown in a single Apple Wallet sheet.
 
 ### Example
 
 ```javascript
-const showViewControllerWithData = async (filePath) => {
+const showAddPassControllerFromFile = async (filePath) => {
   try {
-    const result = await WalletManager.showViewControllerWithData(filePath);
-    console.log(`Pass was added: ${result}`);
+    const result = await WalletManager.showAddPassControllerFromFile(filePath);
+    console.log(`File was read: ${result}`);
   } catch (e) {
     console.error('Error displaying pass view controller:', e);
   }
