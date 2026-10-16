@@ -19,6 +19,10 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
   private weak var presentedController: PKAddPassesViewController?
   private var presentedAt = Date.distantPast
 
+  private static let urlCharacters = CharacterSet(
+    charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%"
+  )
+
   // MARK: - canAddPasses
 
   @MainActor @objc
@@ -49,7 +53,7 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
                              headers: [String: String]?,
                              completion: @escaping (Bool, String?, String?) -> Void
   ) {
-    guard let url = URL(string: passUrlString) else {
+    guard let url = Self.makeURL(passUrlString) else {
       completion(false, "INVALID_URL", "The pass URL is invalid")
       return
     }
@@ -235,6 +239,15 @@ public class WalletManagerImpl: NSObject, @preconcurrency PKAddPassesViewControl
     passLibrary = nil
     presentedController = nil
     return true
+  }
+
+  // URL(string:) percent-encodes invalid characters since iOS 17 and returns nil
+  // on earlier versions. Encode them everywhere, and require a scheme.
+  private static func makeURL(_ string: String) -> URL? {
+    let url = URL(string: string)
+      ?? string.addingPercentEncoding(withAllowedCharacters: urlCharacters).flatMap { URL(string: $0) }
+    guard let url = url, url.scheme != nil else { return nil }
+    return url
   }
 
   // Accepts a single .pkpass or a .pkpasses bundle of them.
