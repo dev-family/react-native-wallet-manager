@@ -16,6 +16,13 @@ RCT_EXPORT_MODULE()
 
 WalletManagerImpl *walletManager = [[WalletManagerImpl alloc] init];
 
+// WalletManagerImpl presents PassKit UI and keeps request state, so every call
+// runs on the main thread.
+- (dispatch_queue_t)methodQueue
+{
+  return dispatch_get_main_queue();
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
